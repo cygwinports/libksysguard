@@ -1,0 +1,38 @@
+inherit kf5
+
+NAME="libksysguard"
+VERSION=5.8.5
+RELEASE=1
+CATEGORY="Libs"
+SUMMARY="KDE process management library"
+DESCRIPTION="KSysGuard library provides API to read and manage processes
+running on the system."
+
+PATCH_URI="5.8.3-cygwin.patch"
+
+PKG_NAMES="${NAME}7 ${NAME}-common ${NAME}-devel"
+libksysguard7_CONTENTS="
+	usr/bin/cygksgrd-7.dll
+	usr/bin/cygksignalplotter-7.dll
+	usr/bin/cyglsofui-7.dll
+	usr/bin/cygprocesscore-7.dll
+	usr/bin/cygprocessui-7.dll
+"
+libksysguard_common_CONTENTS="
+	etc/dbus-1/system.d/org.kde.ksysguard.processlisthelper.conf
+	usr/libexec/kauth/ksysguardprocesslist_helper.exe
+	usr/share/dbus-1/system-services/org.kde.ksysguard.processlisthelper.service
+	usr/share/doc/${NAME}/
+	usr/share/ksysguard/
+	usr/share/locale/
+"
+libksysguard_devel_REQUIRES="libKF5Config-devel libKF5I18n-devel libQt5Core-devel libQt5Gui-devel"
+libksysguard_devel_CONTENTS="
+	usr/include/ksysguard/
+	usr/lib/cmake/KF5SysGuard/
+	usr/lib/libksgrd.dll.a
+	usr/lib/libksignalplotter.dll.a
+	usr/lib/liblsofui.dll.a
+	usr/lib/libprocesscore.dll.a
+	usr/lib/libprocessui.dll.a
+"

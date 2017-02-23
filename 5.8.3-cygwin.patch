@@ -1,0 +1,63 @@
+--- origsrc/libksysguard-5.8.3/processcore/processes_linux_p.cpp	2016-11-01 07:15:33.000000000 -0500
++++ src/libksysguard-5.8.3/processcore/processes_linux_p.cpp	2016-11-28 21:23:52.062287500 -0600
+@@ -39,9 +39,11 @@
+ #include <sys/resource.h>
+ #include <dirent.h>
+ #include <stdlib.h>
++#ifndef Q_OS_CYGWIN
+ //for ionice
+ #include <sys/ptrace.h>
+ #include <asm/unistd.h>
++#endif
+ //for getsched
+ #include <sched.h>
+ 
+@@ -51,7 +53,10 @@
+ extern int sys_ioprio_set(int, int, int);
+ extern int sys_ioprio_get(int, int);
+ 
++#ifndef Q_OS_CYGWIN
+ #define HAVE_IONICE
++#endif
++
+ /* Check if this system has ionice */
+ #if !defined(SYS_ioprio_get) || !defined(SYS_ioprio_set)
+ /* All new kernels have SYS_ioprio_get and _set defined, but for the few that do not, here are the definitions */
+@@ -271,12 +276,15 @@ bool ProcessesLocal::Private::readProcSt
+                 case 6: //ttyNo
+                     {
+                         int ttyNo = atoi(word+1);
+-                        int major = ttyNo >> 8;
++                        int major = ttyNo >> 16;
+                         int minor = ttyNo & 0xff;
+                         switch(major) {
+                             case 136:
+                                 ps->setTty(QByteArray("pts/") + QByteArray::number(minor));
+                                 break;
++                            case 117:
++                                ps->setTty(QByteArray("ttyS") + QByteArray::number(minor));
++                                break;
+                             case 5:
+                                 ps->setTty(QByteArray("tty"));
+                             case 4:
+@@ -285,6 +293,9 @@ bool ProcessesLocal::Private::readProcSt
+                                 else
+                                     ps->setTty(QByteArray("ttyS") + QByteArray::number(minor-64));
+                                 break;
++                            case 3:
++                                ps->setTty(QByteArray("cons/") + QByteArray::number(minor));
++                                break;
+                             default:
+                                 ps->setTty(QByteArray());
+                         }
+--- origsrc/libksysguard-5.8.3/processcore/processes_local_p.cpp	2016-11-01 07:15:33.000000000 -0500
++++ src/libksysguard-5.8.3/processcore/processes_local_p.cpp	2016-11-09 10:38:47.917182400 -0600
+@@ -19,7 +19,7 @@
+ 
+ */
+ 
+-#if defined __linux__
++#if defined __linux__ || defined __CYGWIN__
+ #include "processes_linux_p.cpp"
+ #elif defined __FreeBSD__ || defined __FreeBSD_kernel__
+ #include "processes_freebsd_p.cpp"
